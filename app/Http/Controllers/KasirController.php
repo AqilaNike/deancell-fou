@@ -40,17 +40,49 @@ class KasirController extends Controller
             return redirect()->back()->withErrors(['Keranjang kosong!']);
         }
 
-        // Simpan ke tabel transaksis
-        $transaksi = Transaksi::create([
-            'idTransaksi' => 'TR' . rand(1000, 9999),
-            'tanggal' => now(),
-            'total' => $total,
-            'metodeBayar' => 'Cash',
-            'idKaryawan' => null, 
-            'idPelanggan' => null, 
-            'id_outlet' => null, 
-        ]);
+        \Illuminate\Support\Facades\DB::beginTransaction();
+        try {
+            // Ambil data pertama sebagai default karena tidak boleh null
+            $karyawan = \App\Models\Karyawan::first();
+            $pelanggan = \App\Models\Pelanggan::first();
+            $outlet = \App\Models\Outlet::first();
 
-        return redirect()->back()->with('success', 'Transaksi berhasil disimpan!');
+            $idTransaksi = 'TR' . rand(1000, 9999);
+
+            // Simpan ke tabel transaksis
+            $transaksi = Transaksi::create([
+                'idTransaksi' => $idTransaksi,
+                'tanggal' => now(),
+                'total' => $total,
+                'metodeBayar' => $request->input('payment_method', 'Cash'),
+                'idKaryawan' => $karyawan ? $karyawan->idKaryawan : 'k11', 
+                'idPelanggan' => $pelanggan ? $pelanggan->idPelanggan : 'i20', 
+                'id_outlet' => $outlet ? $outlet->id_outlet : 'o899', 
+            ]);
+
+            // Simpan ke detail transaksi dan potong stok
+            foreach ($cartData as $idProduk => $item) {
+                \App\Models\DetailTransaksi::create([
+                    'idTransaksi' => $idTransaksi,
+                    'idProduk' => $idProduk,
+                    'id_merchant' => null,
+                    'harga_satuan' => $item['price'],
+                    'jumlah' => $item['qty'],
+                    'total' => $item['price'] * $item['qty'],
+                ]);
+
+                // Kurangi stok produk
+                $produk = Produk::where('idProduk', $idProduk)->first();
+                if ($produk) {
+                    $produk->decrement('stok', $item['qty']);
+                }
+            }
+
+            \Illuminate\Support\Facades\DB::commit();
+            return redirect()->back()->with('success', 'Transaksi berhasil disimpan!');
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollback();
+            return redirect()->back()->withErrors(['Terjadi kesalahan: ' . $e->getMessage()]);
+        }
     }
 }
