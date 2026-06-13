@@ -1,206 +1,181 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-
-    <title>{{ config('app.name', 'DeanCell') }}</title>
-
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=source-sans-pro:300,400,400i,600,700&display=swap" rel="stylesheet" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeanCell - Management System</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <!-- Scripts -->
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0fdfa',
+                            100: '#ccfbf1',
+                            500: '#14b8a6',
+                            600: '#0d9488',
+                            900: '#134e4a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        body { font-family: 'Source Sans Pro', sans-serif; }
-        .bg-admin-blue { background-color: #3c8dbc; }
-        .bg-admin-blue-dark { background-color: #367fa9; }
-        .bg-admin-sidebar { background-color: #222d32; }
-        .bg-admin-sidebar-hover { background-color: #1e282c; }
-        .text-admin-sidebar { color: #b8c7ce; }
-        .bg-admin-body { background-color: #ecf0f5; }
-        .border-admin-blue { border-top-color: #3c8dbc; }
+        /* Custom scrollbar for modern look */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
     </style>
 </head>
-<body class="font-sans antialiased text-gray-800 bg-admin-body">
-    <div class="flex h-screen overflow-hidden">
+<body class="bg-gray-50 text-gray-800 flex h-screen overflow-hidden antialiased">
 
-        <!-- Sidebar -->
-        <aside class="w-64 bg-admin-sidebar text-admin-sidebar flex-shrink-0 flex flex-col hidden md:flex transition-all duration-300">
-            <!-- Brand Logo -->
-            <div class="h-14 flex items-center justify-center bg-admin-blue-dark text-white text-xl font-bold font-sans">
-                <span class="font-light">Dean</span>Cell
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white border-r border-gray-200 flex flex-col transition-all duration-300 z-20">
+        <!-- Logo -->
+        <div class="h-16 flex items-center px-6 border-b border-gray-100">
+            <div class="flex items-center gap-3 text-brand-600">
+                <div class="bg-brand-100 p-2 rounded-lg">
+                    <i class="fas fa-layer-group text-xl"></i>
+                </div>
+                <span class="text-xl font-bold tracking-tight">DeanCell<span class="text-gray-400 font-light">App</span></span>
             </div>
-
-            <!-- User Panel -->
-            <div class="flex items-center p-4 border-b border-gray-700">
-                <div class="flex-shrink-0">
-                    <div class="w-10 h-10 rounded-full bg-gray-500 flex items-center justify-center text-white">
-                        <i class="fas fa-user"></i>
-                    </div>
-                </div>
-                <div class="ml-3">
-                    <p class="text-sm font-medium text-white">{{ Auth::user()->name ?? 'Admin DeanCell' }}</p>
-                    <a href="#" class="text-xs text-green-400"><i class="fas fa-circle text-xs mr-1"></i> Online</a>
-                </div>
-            </div>
-
-            <!-- Sidebar Menu -->
-            <nav class="flex-1 overflow-y-auto py-4">
-                <ul class="text-sm">
-                    <li class="px-4 py-2 text-xs font-bold text-gray-500 uppercase tracking-wider">Main Navigation</li>
-                    
-                    <li>
-                        <a href="{{ route('dashboard') }}" class="flex items-center px-4 py-3 hover:bg-admin-sidebar-hover hover:text-white transition-colors {{ request()->routeIs('dashboard') ? 'bg-admin-sidebar-hover text-white border-l-4 border-blue-500' : '' }}">
-                            <i class="fas fa-tachometer-alt w-6 text-center"></i>
-                            <span class="ml-2">Dashboard</span>
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="{{ route('pelanggan.index') }}" class="flex items-center px-4 py-3 hover:bg-admin-sidebar-hover hover:text-white transition-colors {{ request()->routeIs('pelanggan.*') ? 'bg-admin-sidebar-hover text-white border-l-4 border-blue-500' : '' }}">
-                            <i class="fas fa-users w-6 text-center"></i>
-                            <span class="ml-2">Pelanggan</span>
-                        </a>
-                    </li>
-
-                    <li>
-                        <a href="{{ route('karyawan.index') }}" class="flex items-center px-4 py-3 hover:bg-admin-sidebar-hover hover:text-white transition-colors {{ request()->routeIs('karyawan.*') ? 'bg-admin-sidebar-hover text-white border-l-4 border-blue-500' : '' }}">
-                            <i class="fas fa-user-tie w-6 text-center"></i>
-                            <span class="ml-2">Karyawan</span>
-                        </a>
-                    </li>
-
-                    <li>
-                        <a href="{{ route('produk.index') }}" class="flex items-center px-4 py-3 hover:bg-admin-sidebar-hover hover:text-white transition-colors {{ request()->routeIs('produk.*') ? 'bg-admin-sidebar-hover text-white border-l-4 border-blue-500' : '' }}">
-                            <i class="fas fa-box w-6 text-center"></i>
-                            <span class="ml-2">Produk</span>
-                        </a>
-                    </li>
-
-                    <li>
-                        <a href="{{ route('merchant_brilink.index') }}" class="flex items-center px-4 py-3 hover:bg-admin-sidebar-hover hover:text-white transition-colors {{ request()->routeIs('merchant_brilink.*') ? 'bg-admin-sidebar-hover text-white border-l-4 border-blue-500' : '' }}">
-                            <i class="fas fa-store w-6 text-center"></i>
-                            <span class="ml-2">Merchant BRILink</span>
-                        </a>
-                    </li>
-
-                    <li>
-                        <a href="{{ route('outlet.index') }}" class="flex items-center px-4 py-3 hover:bg-admin-sidebar-hover hover:text-white transition-colors {{ request()->routeIs('outlet.*') ? 'bg-admin-sidebar-hover text-white border-l-4 border-blue-500' : '' }}">
-                            <i class="fas fa-building w-6 text-center"></i>
-                            <span class="ml-2">Outlet</span>
-                        </a>
-                    </li>
-
-                    <li>
-                        <a href="{{ route('transaksi.index') }}" class="flex items-center px-4 py-3 hover:bg-admin-sidebar-hover hover:text-white transition-colors {{ request()->routeIs('transaksi.*') ? 'bg-admin-sidebar-hover text-white border-l-4 border-blue-500' : '' }}">
-                            <i class="fas fa-shopping-cart w-6 text-center"></i>
-                            <span class="ml-2">Transaksi</span>
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="{{ route('detail_transaksi.index') }}" class="flex items-center px-4 py-3 hover:bg-admin-sidebar-hover hover:text-white transition-colors {{ request()->routeIs('detail_transaksi.*') ? 'bg-admin-sidebar-hover text-white border-l-4 border-blue-500' : '' }}">
-                            <i class="fas fa-list w-6 text-center"></i>
-                            <span class="ml-2">Detail Transaksi</span>
-                        </a>
-                    </li>
-
-                    <li>
-                        <a href="{{ route('pemasok.index') }}" class="flex items-center px-4 py-3 hover:bg-admin-sidebar-hover hover:text-white transition-colors {{ request()->routeIs('pemasok.*') ? 'bg-admin-sidebar-hover text-white border-l-4 border-blue-500' : '' }}">
-                            <i class="fas fa-truck w-6 text-center"></i>
-                            <span class="ml-2">Pemasok</span>
-                        </a>
-                    </li>
-
-                    <li>
-                        <a href="{{ route('pengadaan_barang.index') }}" class="flex items-center px-4 py-3 hover:bg-admin-sidebar-hover hover:text-white transition-colors {{ request()->routeIs('pengadaan_barang.*') ? 'bg-admin-sidebar-hover text-white border-l-4 border-blue-500' : '' }}">
-                            <i class="fas fa-clipboard-list w-6 text-center"></i>
-                            <span class="ml-2">Pengadaan Barang</span>
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a href="{{ route('detail_pengadaan.index') }}" class="flex items-center px-4 py-3 hover:bg-admin-sidebar-hover hover:text-white transition-colors {{ request()->routeIs('detail_pengadaan.*') ? 'bg-admin-sidebar-hover text-white border-l-4 border-blue-500' : '' }}">
-                            <i class="fas fa-boxes w-6 text-center"></i>
-                            <span class="ml-2">Detail Pengadaan</span>
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-        </aside>
-
-        <!-- Main Content -->
-        <div class="flex-1 flex flex-col overflow-hidden">
-            <!-- Topbar -->
-            <header class="h-14 bg-admin-blue flex items-center justify-between px-4 text-white shadow z-10">
-                <div class="flex items-center">
-                    <button class="md:hidden text-white focus:outline-none mr-4">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                    <button class="hidden md:block text-white focus:outline-none">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                </div>
-
-                <div class="flex items-center">
-                    <!-- Notifications -->
-                    <button class="text-white mx-3 hover:text-gray-200 focus:outline-none relative">
-                        <i class="far fa-bell"></i>
-                        <span class="absolute top-0 right-0 -mt-1 -mr-1 px-1 py-0.5 bg-yellow-500 text-xs text-white rounded-full leading-none">10</span>
-                    </button>
-                    
-                    <!-- Profile Dropdown -->
-                    <div class="relative ml-3">
-                        <form method="POST" action="/logout">
-                            @csrf
-                            <button type="submit" class="flex items-center text-sm font-medium text-white hover:text-gray-200 focus:outline-none transition duration-150 ease-in-out">
-                                <span>{{ Auth::user()->name ?? 'Admin DeanCell' }}</span>
-                                <i class="fas fa-sign-out-alt ml-2 text-sm"></i>
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </header>
-
-            <!-- Page Content -->
-            <main class="flex-1 overflow-y-auto p-6 bg-admin-body">
-                <!-- Content Header -->
-                <div class="mb-6 flex justify-between items-center">
-                    <h1 class="text-2xl font-normal text-gray-800">
-                        @yield('header_title', 'Dashboard')
-                        <small class="text-sm text-gray-500 ml-2 font-light">@yield('header_subtitle', 'Control panel')</small>
-                    </h1>
-                    <ol class="flex text-sm text-gray-600 bg-transparent rounded">
-                        <li><a href="{{ route('dashboard') }}" class="text-blue-600 hover:text-blue-800"><i class="fas fa-home mr-1"></i> Home</a></li>
-                        <li class="mx-2">/</li>
-                        <li class="text-gray-500">@yield('header_title', 'Dashboard')</li>
-                    </ol>
-                </div>
-
-                <!-- Main Content Area -->
-                <div class="w-full">
-                    <!-- Flash Messages -->
-                    @if (session('success'))
-                        <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4" role="alert">
-                            <p>{{ session('success') }}</p>
-                        </div>
-                    @endif
-
-                    @if (session('error'))
-                        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
-                            <p>{{ session('error') }}</p>
-                        </div>
-                    @endif
-
-                    @yield('content')
-                </div>
-            </main>
         </div>
+
+        <!-- Navigation -->
+        <div class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+            <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-2">Menu Utama</p>
+            
+            <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs('admin.dashboard') ? 'bg-brand-50 text-brand-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+                <i class="fas fa-home w-5 text-center {{ request()->routeIs('admin.dashboard') ? 'text-brand-500' : 'text-gray-400' }}"></i>
+                Dashboard
+            </a>
+
+            <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-6">Master Data</p>
+            
+            <a href="{{ route('produk.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs('produk.*') ? 'bg-brand-50 text-brand-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+                <i class="fas fa-box w-5 text-center {{ request()->routeIs('produk.*') ? 'text-brand-500' : 'text-gray-400' }}"></i>
+                Data Produk
+            </a>
+            <a href="{{ route('pelanggan.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs('pelanggan.*') ? 'bg-brand-50 text-brand-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+                <i class="fas fa-users w-5 text-center {{ request()->routeIs('pelanggan.*') ? 'text-brand-500' : 'text-gray-400' }}"></i>
+                Pelanggan
+            </a>
+            <a href="{{ route('karyawan.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs('karyawan.*') ? 'bg-brand-50 text-brand-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+                <i class="fas fa-id-badge w-5 text-center {{ request()->routeIs('karyawan.*') ? 'text-brand-500' : 'text-gray-400' }}"></i>
+                Karyawan
+            </a>
+            <a href="{{ route('merchant_brilink.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs('merchant_brilink.*') ? 'bg-brand-50 text-brand-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+                <i class="fas fa-store-alt w-5 text-center {{ request()->routeIs('merchant_brilink.*') ? 'text-brand-500' : 'text-gray-400' }}"></i>
+                Merchant BRILink
+            </a>
+            <a href="{{ route('outlet.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs('outlet.*') ? 'bg-brand-50 text-brand-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+                <i class="fas fa-building w-5 text-center {{ request()->routeIs('outlet.*') ? 'text-brand-500' : 'text-gray-400' }}"></i>
+                Outlet
+            </a>
+            <a href="{{ route('pemasok.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs('pemasok.*') ? 'bg-brand-50 text-brand-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+                <i class="fas fa-truck w-5 text-center {{ request()->routeIs('pemasok.*') ? 'text-brand-500' : 'text-gray-400' }}"></i>
+                Pemasok
+            </a>
+
+            <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-6">Transaksi</p>
+            
+            <a href="{{ route('transaksi.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs('transaksi.*') ? 'bg-brand-50 text-brand-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+                <i class="fas fa-shopping-cart w-5 text-center {{ request()->routeIs('transaksi.*') ? 'text-brand-500' : 'text-gray-400' }}"></i>
+                Penjualan (Kasir)
+            </a>
+            <a href="{{ route('pengadaan_barang.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs('pengadaan_barang.*') ? 'bg-brand-50 text-brand-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+                <i class="fas fa-boxes w-5 text-center {{ request()->routeIs('pengadaan_barang.*') ? 'text-brand-500' : 'text-gray-400' }}"></i>
+                Pengadaan Barang
+            </a>
+            <a href="{{ route('detail_transaksi.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs('detail_transaksi.*') ? 'bg-brand-50 text-brand-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+                <i class="fas fa-list-alt w-5 text-center {{ request()->routeIs('detail_transaksi.*') ? 'text-brand-500' : 'text-gray-400' }}"></i>
+                Detail Transaksi
+            </a>
+            <a href="{{ route('detail_pengadaan.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs('detail_pengadaan.*') ? 'bg-brand-50 text-brand-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+                <i class="fas fa-clipboard-list w-5 text-center {{ request()->routeIs('detail_pengadaan.*') ? 'text-brand-500' : 'text-gray-400' }}"></i>
+                Detail Pengadaan
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col min-w-0 bg-gray-50/50">
+        <!-- Topbar -->
+        <header class="h-16 bg-white/80 backdrop-blur-md border-b border-gray-200 flex items-center justify-between px-6 sticky top-0 z-10">
+            <div>
+                <h2 class="text-xl font-bold text-gray-800 tracking-tight">@yield('header_title', 'Dashboard')</h2>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-3 bg-gray-50 py-1.5 px-3 rounded-full border border-gray-200">
+                    <div class="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-600 font-bold">
+                        {{ substr(Auth::user()->name ?? 'A', 0, 1) }}
+                    </div>
+                    <div class="text-sm">
+                        <p class="font-medium text-gray-700 leading-none">{{ Auth::user()->name ?? 'Administrator' }}</p>
+                        <p class="text-xs text-gray-500 mt-1 capitalize">{{ Auth::user()->role ?? 'Admin' }}</p>
+                    </div>
+                </div>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="w-10 h-10 rounded-full bg-white border border-gray-200 text-gray-500 hover:text-red-600 hover:bg-red-50 hover:border-red-100 transition-colors flex items-center justify-center" title="Logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </form>
+            </div>
+        </header>
+
+        <!-- Page Content -->
+        <main class="flex-1 overflow-y-auto p-6">
+            @if(session('success'))
+                <div class="bg-teal-50 border border-teal-200 text-teal-800 px-4 py-3 rounded-lg relative mb-6 shadow-sm flex items-center gap-3" role="alert">
+                    <i class="fas fa-check-circle text-teal-500 text-xl"></i>
+                    <span class="block sm:inline font-medium">{{ session('success') }}</span>
+                </div>
+            @endif
+
+            @if($errors->any())
+                <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg relative mb-6 shadow-sm flex items-start gap-3" role="alert">
+                    <i class="fas fa-exclamation-circle text-red-500 text-xl mt-0.5"></i>
+                    <div>
+                        <strong class="font-bold">Oops! Ada kesalahan.</strong>
+                        <ul class="list-disc mt-1 ml-4 text-sm">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+            @endif
+
+            @yield('content')
+        </main>
     </div>
+
+    @stack('scripts')
 </body>
 </html>
