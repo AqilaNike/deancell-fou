@@ -47,11 +47,30 @@
         </div>
     </div>
 
-    <!-- Chart -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h3 class="text-lg font-bold text-gray-800 mb-4">Grafik Penjualan Kasir</h3>
-        <div class="w-full h-64">
-            <canvas id="kasirChart"></canvas>
+    <!-- Charts Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Area Chart: 7 Hari Terakhir -->
+        <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div class="flex justify-between items-center mb-4">
+                <div>
+                    <h3 class="text-lg font-bold text-gray-800">Grafik Penjualan 7 Hari Terakhir</h3>
+                    <p class="text-sm text-gray-400 mt-1">Tren pendapatan harian</p>
+                </div>
+            </div>
+            <div class="w-full" style="height: 280px;">
+                <canvas id="kasirLineChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Bar Chart: Ringkasan -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div class="mb-4">
+                <h3 class="text-lg font-bold text-gray-800">Ringkasan Penjualan</h3>
+                <p class="text-sm text-gray-400 mt-1">Hari ini, minggu ini, bulan ini</p>
+            </div>
+            <div class="w-full" style="height: 280px;">
+                <canvas id="kasirBarChart"></canvas>
+            </div>
         </div>
     </div>
 </div>
@@ -60,10 +79,103 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const ctx = document.getElementById('kasirChart').getContext('2d');
+        // ========== LINE CHART: 7 Hari Terakhir ==========
+        const lineCtx = document.getElementById('kasirLineChart').getContext('2d');
+        const dates = @json($chartDates);
+        const totals = @json($chartTotals);
+
+        const gradient = lineCtx.createLinearGradient(0, 0, 0, 280);
+        gradient.addColorStop(0, 'rgba(59, 130, 246, 0.25)');
+        gradient.addColorStop(0.5, 'rgba(59, 130, 246, 0.06)');
+        gradient.addColorStop(1, 'rgba(59, 130, 246, 0)');
+
+        new Chart(lineCtx, {
+            type: 'line',
+            data: {
+                labels: dates.length > 0 ? dates : ['Tidak ada data'],
+                datasets: [{
+                    label: 'Pendapatan (Rp)',
+                    data: totals.length > 0 ? totals : [0],
+                    borderColor: '#3b82f6',
+                    backgroundColor: gradient,
+                    borderWidth: 3,
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#ffffff',
+                    pointBorderColor: '#3b82f6',
+                    pointBorderWidth: 3,
+                    pointRadius: 5,
+                    pointHoverRadius: 8,
+                    pointHoverBackgroundColor: '#3b82f6',
+                    pointHoverBorderColor: '#ffffff',
+                    pointHoverBorderWidth: 3,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        titleColor: '#e2e8f0',
+                        bodyColor: '#ffffff',
+                        bodyFont: { size: 14, weight: 'bold' },
+                        titleFont: { size: 12 },
+                        padding: 12,
+                        cornerRadius: 12,
+                        displayColors: false,
+                        callbacks: {
+                            label: function(context) {
+                                return 'Rp ' + context.parsed.y.toLocaleString('id-ID');
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        border: { display: false },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.04)',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: '#94a3b8',
+                            font: { size: 11 },
+                            padding: 8,
+                            callback: function(value) {
+                                if (value >= 1000000) {
+                                    return 'Rp ' + (value / 1000000).toFixed(1) + ' Jt';
+                                } else if (value >= 1000) {
+                                    return 'Rp ' + (value / 1000).toFixed(0) + ' Rb';
+                                }
+                                return 'Rp ' + value.toLocaleString('id-ID');
+                            }
+                        }
+                    },
+                    x: {
+                        border: { display: false },
+                        grid: { display: false },
+                        ticks: {
+                            color: '#94a3b8',
+                            font: { size: 11 },
+                            padding: 8
+                        }
+                    }
+                }
+            }
+        });
+
+        // ========== BAR CHART: Ringkasan ==========
+        const barCtx = document.getElementById('kasirBarChart').getContext('2d');
         const chartData = @json($chartData);
-        
-        new Chart(ctx, {
+
+        new Chart(barCtx, {
             type: 'bar',
             data: {
                 labels: ['Hari Ini', 'Minggu Ini', 'Bulan Ini'],
@@ -71,29 +183,68 @@
                     label: 'Total Penjualan (Rp)',
                     data: chartData,
                     backgroundColor: [
-                        'rgba(59, 130, 246, 0.5)',
-                        'rgba(16, 185, 129, 0.5)',
-                        'rgba(139, 92, 246, 0.5)'
+                        'rgba(59, 130, 246, 0.75)',
+                        'rgba(16, 185, 129, 0.75)',
+                        'rgba(139, 92, 246, 0.75)'
                     ],
                     borderColor: [
-                        'rgb(59, 130, 246)',
-                        'rgb(16, 185, 129)',
-                        'rgb(139, 92, 246)'
+                        '#3b82f6',
+                        '#10b981',
+                        '#8b5cf6'
                     ],
-                    borderWidth: 1,
-                    borderRadius: 4
+                    borderWidth: 2,
+                    borderRadius: 10,
+                    borderSkipped: false,
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        bodyColor: '#ffffff',
+                        bodyFont: { size: 13, weight: 'bold' },
+                        padding: 12,
+                        cornerRadius: 12,
+                        displayColors: false,
+                        callbacks: {
+                            label: function(context) {
+                                return 'Rp ' + context.parsed.y.toLocaleString('id-ID');
+                            }
+                        }
+                    }
+                },
                 scales: {
                     y: {
                         beginAtZero: true,
+                        border: { display: false },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.04)',
+                            drawBorder: false
+                        },
                         ticks: {
+                            color: '#94a3b8',
+                            font: { size: 11 },
+                            padding: 8,
                             callback: function(value) {
+                                if (value >= 1000000) {
+                                    return 'Rp ' + (value / 1000000).toFixed(1) + ' Jt';
+                                } else if (value >= 1000) {
+                                    return 'Rp ' + (value / 1000).toFixed(0) + ' Rb';
+                                }
                                 return 'Rp ' + value.toLocaleString('id-ID');
                             }
+                        }
+                    },
+                    x: {
+                        border: { display: false },
+                        grid: { display: false },
+                        ticks: {
+                            color: '#334155',
+                            font: { size: 12, weight: '500' },
+                            padding: 8
                         }
                     }
                 }

@@ -19,10 +19,19 @@ class KasirController extends Controller
         $salesWeek = Transaksi::whereBetween('tanggal', [$today->copy()->startOfWeek(), $today->copy()->endOfWeek()])->sum('total');
         $salesMonth = Transaksi::whereMonth('tanggal', $today->month)->whereYear('tanggal', $today->year)->sum('total');
 
-        // Data for Chart.js
+        // Data for summary bar chart
         $chartData = [$salesToday, $salesWeek, $salesMonth];
 
-        return view('kasir.dashboard', compact('salesToday', 'salesWeek', 'salesMonth', 'chartData'));
+        // Data for 7-day line chart
+        $chartDates = [];
+        $chartTotals = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $date = Carbon::today()->subDays($i);
+            $chartDates[] = $date->format('d M');
+            $chartTotals[] = (int) Transaksi::whereDate('tanggal', $date)->sum('total');
+        }
+
+        return view('kasir.dashboard', compact('salesToday', 'salesWeek', 'salesMonth', 'chartData', 'chartDates', 'chartTotals'));
     }
 
     public function pos()

@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Produk;
 use App\Models\Transaksi;
 use App\Models\Pelanggan;
+use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
@@ -16,15 +17,43 @@ class DashboardController extends Controller
         $totalProduk = Produk::count();
         $totalPendapatan = Transaksi::sum('total');
 
-        // Data for Chart.js (Sales grouped by Date)
-        $salesData = Transaksi::selectRaw('DATE(tanggal) as date, SUM(total) as daily_total')
-            ->groupBy('date')
-            ->orderBy('date', 'asc')
-            ->limit(7) // Last 7 days with sales
-            ->get();
-            
-        $chartDates = $salesData->pluck('date')->toArray();
-        $chartTotals = $salesData->pluck('daily_total')->toArray();
+        // Data for Chart.js - Actual last 7 days (including days with 0 sales)
+        $chartDates = [];
+        $chartTotals = [];
+        
+        for ($i = 6; $i >= 0; $i--) {
+            $date = Carbon::today()->subDays($i);
+            $chartDates[] = $date->format('d M');
+            $chartTotals[] = (int) Transaksi::whereDate('tanggal', $date)->sum('total');
+        }
+
+        // Monthly sales data for the last 6 months (for doughnut chart)
+        $monthlySalesLabels = [];
+        $monthlySalesData = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $month = Carbon::today()->subMonths($i);
+            $monthlySalesLabels[] = $month->translatedFormat('M Y');
+            $monthlySalesData[] = (int) Transaksi::whereMonth('tanggal', $month->month)
+                ->whereYear('tanggal', $month->year)
+                ->sum('total');
+        }
+
+        // Top 5 selling products
+        $topProducts = \App\Models\DetailTransaksi::selectRaw('idProduk, SUM(jumlah) as total_qty')
+            ->groupBy('idProduk')
+            ->orderByDesc('total_qty')
+            ->limit(5)
+            ->get()
+            ->map(function ($item) {
+                $produk = Produk::find($item->idProduk);
+                return [
+                    'name' => $produk ? $produk->namaProduk : $item->idProduk,
+                    'qty' => $item->total_qty,
+                ];
+            });
+
+        $topProductLabels = $topProducts->pluck('name')->toArray();
+        $topProductData = $topProducts->pluck('qty')->toArray();
 
         return view('admin.dashboard', compact(
             'totalPelanggan', 
@@ -32,7 +61,11 @@ class DashboardController extends Controller
             'totalProduk', 
             'totalPendapatan',
             'chartDates',
-            'chartTotals'
+            'chartTotals',
+            'monthlySalesLabels',
+            'monthlySalesData',
+            'topProductLabels',
+            'topProductData'
         ));
     }
 }
