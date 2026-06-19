@@ -89,9 +89,13 @@
                             <option value="Bekas" {{ old('kondisi') == 'Bekas' ? 'selected' : '' }}>Bekas</option>
                         </select>
                     </div>
-                    <div class="mb-4 md:col-span-2">
+                    <div class="mb-4">
                         <label for="garansi" class="block text-sm font-medium text-gray-700 mb-1">Garansi</label>
                         <input type="text" name="garansi" id="garansi" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50" value="{{ old('garansi') }}" placeholder="Contoh: 1 Tahun Resmi">
+                    </div>
+                    <div class="mb-4">
+                        <label for="tipe_layanan_hp" class="block text-sm font-medium text-gray-700 mb-1">Tipe Layanan</label>
+                        <input type="text" name="tipe_layanan_hp" id="tipe_layanan_hp" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50" value="{{ old('tipe_layanan') }}" placeholder="Contoh: Servis LCD, Ganti Baterai">
                     </div>
                 </div>
             </div>
@@ -104,9 +108,29 @@
                         <label for="provider" class="block text-sm font-medium text-gray-700 mb-1">Nama Provider</label>
                         <input type="text" name="provider" id="provider" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50" value="{{ old('provider') }}">
                     </div>
-                    <div class="mb-4">
+                    <div class="mb-4 relative">
                         <label for="nominal_kuota" class="block text-sm font-medium text-gray-700 mb-1">Nominal Kuota / Pulsa</label>
-                        <input type="text" name="nominal_kuota" id="nominal_kuota" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50" value="{{ old('nominal_kuota') }}" placeholder="Contoh: 10 GB">
+                        <input type="text" name="nominal_kuota" id="nominal_kuota" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50" value="{{ old('nominal_kuota') }}" placeholder="Pilih atau ketik (Contoh: Pulsa 5.000)" autocomplete="off">
+                        
+                        <!-- Custom Dropdown -->
+                        <div id="kuota_dropdown" class="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg hidden max-h-48 overflow-y-auto">
+                            <ul class="py-1 text-sm text-gray-700">
+                                <li class="px-4 py-2 hover:bg-blue-50 cursor-pointer transition-colors font-bold text-gray-800 bg-gray-100" onmousedown="event.preventDefault()">-- Pulsa Reguler --</li>
+                                <li class="px-4 py-2 hover:bg-blue-50 cursor-pointer transition-colors flex justify-between" onmousedown="selectKuota('Pulsa 5.000', 5500, 7000)"><span>Pulsa 5.000</span> <span class="text-gray-400 text-xs mt-1">Jual: Rp 7.000</span></li>
+                                <li class="px-4 py-2 hover:bg-blue-50 cursor-pointer transition-colors flex justify-between" onmousedown="selectKuota('Pulsa 10.000', 10500, 12000)"><span>Pulsa 10.000</span> <span class="text-gray-400 text-xs mt-1">Jual: Rp 12.000</span></li>
+                                <li class="px-4 py-2 hover:bg-blue-50 cursor-pointer transition-colors flex justify-between" onmousedown="selectKuota('Pulsa 20.000', 20200, 22000)"><span>Pulsa 20.000</span> <span class="text-gray-400 text-xs mt-1">Jual: Rp 22.000</span></li>
+                                <li class="px-4 py-2 hover:bg-blue-50 cursor-pointer transition-colors flex justify-between" onmousedown="selectKuota('Pulsa 50.000', 49500, 52000)"><span>Pulsa 50.000</span> <span class="text-gray-400 text-xs mt-1">Jual: Rp 52.000</span></li>
+                                <li class="px-4 py-2 hover:bg-blue-50 cursor-pointer transition-colors flex justify-between" onmousedown="selectKuota('Pulsa 100.000', 98500, 102000)"><span>Pulsa 100.000</span> <span class="text-gray-400 text-xs mt-1">Jual: Rp 102.000</span></li>
+                                
+                                <li class="px-4 py-2 hover:bg-blue-50 cursor-pointer transition-colors font-bold text-gray-800 bg-gray-100 border-t" onmousedown="event.preventDefault()">-- Paket Kuota (Estimasi IM3) --</li>
+                                <li class="px-4 py-2 hover:bg-blue-50 cursor-pointer transition-colors flex justify-between" onmousedown="selectKuota('Kuota 3 GB', 15000, 18000)"><span>Kuota 3 GB</span> <span class="text-gray-400 text-xs mt-1">Jual: Rp 18.000</span></li>
+                                <li class="px-4 py-2 hover:bg-blue-50 cursor-pointer transition-colors flex justify-between" onmousedown="selectKuota('Kuota 5 GB', 25000, 28000)"><span>Kuota 5 GB</span> <span class="text-gray-400 text-xs mt-1">Jual: Rp 28.000</span></li>
+                                <li class="px-4 py-2 hover:bg-blue-50 cursor-pointer transition-colors flex justify-between" onmousedown="selectKuota('Kuota 11 GB', 42000, 45000)"><span>Kuota 11 GB</span> <span class="text-gray-400 text-xs mt-1">Jual: Rp 45.000</span></li>
+                                <li class="px-4 py-2 hover:bg-blue-50 cursor-pointer transition-colors flex justify-between" onmousedown="selectKuota('Kuota 20 GB', 65000, 70000)"><span>Kuota 20 GB</span> <span class="text-gray-400 text-xs mt-1">Jual: Rp 70.000</span></li>
+                                <li class="px-4 py-2 hover:bg-blue-50 cursor-pointer transition-colors flex justify-between" onmousedown="selectKuota('Kuota 30 GB', 85000, 90000)"><span>Kuota 30 GB</span> <span class="text-gray-400 text-xs mt-1">Jual: Rp 90.000</span></li>
+                                <li class="px-4 py-2 hover:bg-blue-50 cursor-pointer transition-colors flex justify-between" onmousedown="selectKuota('Kuota 50 GB', 110000, 115000)"><span>Kuota 50 GB</span> <span class="text-gray-400 text-xs mt-1">Jual: Rp 115.000</span></li>
+                            </ul>
+                        </div>
                     </div>
                     <div class="mb-4">
                         <label for="masa_aktif" class="block text-sm font-medium text-gray-700 mb-1">Masa Aktif (Hari)</label>
@@ -159,19 +183,54 @@
         // Show based on selection
         if (jenis === 'Handphone') {
             hpFields.classList.remove('hidden');
+            document.getElementById('tipe_layanan_hp').name = "tipe_layanan";
+            document.getElementById('tipe_layanan').name = "tipe_layanan_ignored";
         } else if (jenis === 'Provider') {
             providerFields.classList.remove('hidden');
             // Duplicate the SN logic if submitting so it goes to the correct field
             document.getElementById('imei_sn2').name = "imei_sn"; 
             document.getElementById('imei_sn').name = "imei_sn_ignored"; 
+            
+            document.getElementById('tipe_layanan').name = "tipe_layanan_ignored";
+            document.getElementById('tipe_layanan_hp').name = "tipe_layanan_ignored";
         } else if (jenis === 'BRILink') {
             brilinkFields.classList.remove('hidden');
+            document.getElementById('tipe_layanan').name = "tipe_layanan";
+            document.getElementById('tipe_layanan_hp').name = "tipe_layanan_ignored";
+        } else {
+            document.getElementById('tipe_layanan').name = "tipe_layanan_ignored";
+            document.getElementById('tipe_layanan_hp').name = "tipe_layanan_ignored";
         }
         
         if(jenis !== 'Provider') {
             document.getElementById('imei_sn').name = "imei_sn"; 
             document.getElementById('imei_sn2').name = "imei_sn_ignored";
         }
+    }
+
+    // Custom Dropdown Logic for Nominal Kuota
+    const kuotaInput = document.getElementById('nominal_kuota');
+    const kuotaDropdown = document.getElementById('kuota_dropdown');
+
+    if(kuotaInput && kuotaDropdown) {
+        kuotaInput.addEventListener('focus', () => {
+            kuotaDropdown.classList.remove('hidden');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!kuotaInput.contains(e.target) && !kuotaDropdown.contains(e.target)) {
+                kuotaDropdown.classList.add('hidden');
+            }
+        });
+    }
+
+    function selectKuota(value, hargaBeli, hargaJual) {
+        kuotaInput.value = value;
+        kuotaDropdown.classList.add('hidden');
+        
+        // Auto-fill harga beli & harga jual
+        if (hargaBeli) document.getElementById('harga_beli').value = hargaBeli;
+        if (hargaJual) document.getElementById('harga_jual').value = hargaJual;
     }
 
     // Run on load to restore state if validation fails
