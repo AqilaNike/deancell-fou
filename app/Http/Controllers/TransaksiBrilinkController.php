@@ -44,6 +44,21 @@ class TransaksiBrilinkController extends Controller
             'tanggal' => now(),
         ]);
 
+        // Simpan juga ke tabel transaksis
+        $pelanggan = \App\Models\Pelanggan::first();
+        $outlet = \App\Models\Outlet::first();
+        $idTransaksi = 'TR' . rand(1000, 9999);
+
+        \App\Models\Transaksi::create([
+            'idTransaksi' => $idTransaksi,
+            'tanggal' => now(),
+            'total' => $nominal + $fee_admin, // Total termasuk fee
+            'metodeBayar' => 'BRILink - ' . $request->input('jenis_transaksi'),
+            'idKaryawan' => $idKaryawan,
+            'idPelanggan' => $pelanggan ? $pelanggan->idPelanggan : 'i20',
+            'id_outlet' => $outlet ? $outlet->id_outlet : 'o899',
+        ]);
+
         return redirect()->route('kasir.brilink.create')
             ->with('success', 'Transaksi BRILink berhasil disimpan! Fee Admin: Rp ' . number_format($fee_admin, 0, ',', '.'));
     }

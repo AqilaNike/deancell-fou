@@ -12,9 +12,6 @@
                 <i class="fas fa-arrow-left mr-1"></i> Kembali ke POS
             </a>
             @endif
-            <a href="{{ route('transaksi.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm transition-colors">
-                <i class="fas fa-plus mr-1"></i> Tambah Data
-            </a>
         </div>
     </div>
     
