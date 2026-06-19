@@ -24,6 +24,7 @@
             <nav class="hidden md:flex space-x-1">
                 <a href="{{ route('kasir.dashboard') }}" class="px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('kasir.dashboard') ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100' }}">Dashboard</a>
                 <a href="{{ route('kasir.pos') }}" class="px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('kasir.pos') ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100' }}">Point of Sale</a>
+                <a href="{{ route('kasir.brilink.create') }}" class="px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('kasir.brilink.*') ? 'bg-teal-100 text-teal-700' : 'text-gray-600 hover:bg-gray-100' }}"><i class="fas fa-university mr-1"></i>BRILink</a>
                 <a href="{{ route('transaksi.index') }}" class="px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('transaksi.*') ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100' }}">Riwayat Transaksi</a>
             </nav>
         </div>
