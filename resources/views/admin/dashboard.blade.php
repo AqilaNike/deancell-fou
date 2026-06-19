@@ -96,7 +96,7 @@
         <div class="w-20 h-20 bg-brand-50 rounded-full flex items-center justify-center text-brand-500 mb-4">
             <i class="fas fa-chart-pie text-3xl"></i>
         </div>
-        <h3 class="text-lg font-bold text-gray-800 mb-2">DeanCell Analytics</h3>
+        <h3 class="text-lg font-bold text-gray-800 mb-2">Deanova ERP Analytics</h3>
         <p class="text-gray-500 text-sm mb-6">Pantau terus perkembangan penjualan dan stok produk Anda untuk memaksimalkan keuntungan bisnis.</p>
         <a href="{{ route('transaksi.index') }}" class="w-full py-2.5 px-4 bg-brand-50 hover:bg-brand-100 text-brand-700 font-medium rounded-xl transition-colors">
             Kelola Transaksi
