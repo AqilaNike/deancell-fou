@@ -53,7 +53,7 @@ class TransaksiBrilinkController extends Controller
             'idTransaksi' => $idTransaksi,
             'tanggal' => now(),
             'total' => $nominal + $fee_admin, // Total termasuk fee
-            'metodeBayar' => 'BRILink - ' . $request->input('jenis_transaksi'),
+            'metodeBayar' => 'BRILink', // Max 20 chars
             'idKaryawan' => $idKaryawan,
             'idPelanggan' => $pelanggan ? $pelanggan->idPelanggan : 'i20',
             'id_outlet' => $outlet ? $outlet->id_outlet : 'o899',
