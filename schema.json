@@ -1,0 +1,88 @@
+{
+    "pelanggans": [
+        "idPelanggan",
+        "nama",
+        "created_at",
+        "updated_at"
+    ],
+    "karyawans": [
+        "idKaryawan",
+        "nama",
+        "noTelp",
+        "Alamat",
+        "created_at",
+        "updated_at"
+    ],
+    "merchant_brilinks": [
+        "id_merchant",
+        "no_agen_bri",
+        "nama_toko",
+        "pemilik",
+        "no_hp_terdaftar",
+        "tipe_perangkat",
+        "saldo_limit",
+        "no_rekening_operasional",
+        "kantor_wilayah",
+        "target_bulanan",
+        "status_aktif",
+        "alamat_toko",
+        "created_at",
+        "updated_at"
+    ],
+    "outlets": [
+        "id_outlet",
+        "nama_outlet",
+        "alamat",
+        "no_telp_outlet",
+        "nama_manajer",
+        "jam_operasional",
+        "created_at",
+        "updated_at"
+    ],
+    "transaksis": [
+        "idTransaksi",
+        "tanggal",
+        "id_outlet",
+        "idPelanggan",
+        "idKaryawan",
+        "total",
+        "metodeBayar",
+        "created_at",
+        "updated_at"
+    ],
+    "pemasoks": [
+        "idPemasok",
+        "nama",
+        "noTelp",
+        "kategoriProduk",
+        "created_at",
+        "updated_at"
+    ],
+    "pengadaan_barangs": [
+        "idPengadaan",
+        "idPemasok",
+        "tanggal_pesan",
+        "tanggal_terima",
+        "total_biaya",
+        "created_at",
+        "updated_at"
+    ],
+    "detail_pengadaans": [
+        "idPengadaan",
+        "idProduk",
+        "jumlah_pesan",
+        "total",
+        "created_at",
+        "updated_at"
+    ],
+    "detail_transaksis": [
+        "idTransaksi",
+        "idProduk",
+        "id_merchant",
+        "harga_satuan",
+        "jumlah",
+        "total",
+        "created_at",
+        "updated_at"
+    ]
+}

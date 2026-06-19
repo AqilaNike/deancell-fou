@@ -61,7 +61,9 @@ class KasirController extends Controller
             ]);
 
             // Simpan ke detail transaksi dan potong stok
-            foreach ($cartData as $idProduk => $item) {
+            foreach ($cartData as $cartId => $item) {
+                $idProduk = isset($item['realId']) ? $item['realId'] : $cartId;
+
                 \App\Models\DetailTransaksi::create([
                     'idTransaksi' => $idTransaksi,
                     'idProduk' => $idProduk,
@@ -79,10 +81,16 @@ class KasirController extends Controller
             }
 
             \Illuminate\Support\Facades\DB::commit();
-            return redirect()->back()->with('success', 'Transaksi berhasil disimpan!');
+            return redirect()->route('kasir.receipt', ['id' => $idTransaksi])->with('success', 'Transaksi berhasil disimpan!');
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\DB::rollback();
             return redirect()->back()->withErrors(['Terjadi kesalahan: ' . $e->getMessage()]);
         }
+    }
+
+    public function receipt($id)
+    {
+        $transaksi = Transaksi::with(['detailTransaksis.produk', 'karyawan', 'pelanggan', 'outlet'])->where('idTransaksi', $id)->firstOrFail();
+        return view('kasir.receipt', compact('transaksi'));
     }
 }

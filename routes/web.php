@@ -50,6 +50,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/kasir/dashboard', [KasirController::class, 'dashboard'])->name('kasir.dashboard');
         Route::get('/kasir/pos', [KasirController::class, 'pos'])->name('kasir.pos');
         Route::post('/kasir/pos/checkout', [KasirController::class, 'checkout'])->name('kasir.checkout');
+        Route::get('/kasir/pos/receipt/{id}', [KasirController::class, 'receipt'])->name('kasir.receipt');
     });
 
     // Shared Routes (Admin and Kasir can both manage transactions)

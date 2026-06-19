@@ -16,10 +16,12 @@
         </div>
         <select id="categoryFilter" class="block w-48 pl-3 pr-10 py-3 text-base border border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-lg">
             <option value="all">Semua Kategori</option>
-            <option value="Handphone">Handphone</option>
-            <option value="Provider">Provider / Pulsa</option>
-            <option value="BRILink">Layanan BRILink</option>
-            <option value="Aksesoris">Aksesoris</option>
+            @php
+                $categories = $products->pluck('jenisProduk')->unique()->filter();
+            @endphp
+            @foreach($categories as $category)
+                <option value="{{ $category }}">{{ $category }}</option>
+            @endforeach
         </select>
     </div>
 
@@ -33,17 +35,20 @@
              data-price="{{ $p->harga_jual }}"
              data-stok="{{ $p->stok ?? 0 }}"
              data-category="{{ $p->jenisProduk }}"
+             data-merk="{{ $p->merk ?? '' }}"
              onclick="addToCart('{{ trim($p->idProduk) }}')">
             
             <div class="h-24 w-full bg-gray-100 rounded-lg flex items-center justify-center mb-3 text-gray-400">
                 @if($p->jenisProduk == 'Handphone')
                     <i class="fas fa-mobile-alt text-4xl"></i>
-                @elseif($p->jenisProduk == 'Provider')
+                @elseif(in_array($p->jenisProduk, ['Provider', 'Pulsa Reguler', 'Voucher Internet']))
                     <i class="fas fa-sim-card text-4xl"></i>
-                @elseif($p->jenisProduk == 'BRILink')
+                @elseif(in_array($p->jenisProduk, ['BRILink', 'Layanan BRILink', 'Top Up E-Wallet']))
                     <i class="fas fa-money-bill-wave text-4xl"></i>
-                @else
+                @elseif($p->jenisProduk == 'Aksesoris')
                     <i class="fas fa-headphones text-4xl"></i>
+                @else
+                    <i class="fas fa-box text-4xl"></i>
                 @endif
             </div>
             
@@ -60,6 +65,62 @@
             <p>Belum ada produk yang tersedia atau stok habis.</p>
         </div>
         @endforelse
+    </div>
+
+    <!-- Inline Top Up E-Wallet Form (hidden by default, shown when category = Top Up E-Wallet) -->
+    <div id="topupInlinePanel" class="hidden pb-20">
+        <div class="max-w-lg mx-auto">
+            <div class="bg-white rounded-2xl shadow-md border border-gray-100 p-8">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                        <i class="fas fa-wallet text-blue-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-800">Top Up E-Wallet</h3>
+                        <p class="text-sm text-gray-500">Pilih provider dan masukkan nominal</p>
+                    </div>
+                </div>
+
+                <!-- Provider -->
+                <div class="mb-5">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Pilih E-Wallet</label>
+                    <select id="topupProvider" class="block w-full pl-4 pr-10 py-3 text-base border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-xl bg-white">
+                        <option value="DANA">DANA</option>
+                        <option value="GoPay">GoPay</option>
+                        <option value="OVO">OVO</option>
+                        <option value="ShopeePay">ShopeePay</option>
+                        <option value="LinkAja">LinkAja</option>
+                    </select>
+                </div>
+
+                <!-- Nominal -->
+                <div class="mb-5">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nominal (Rp)</label>
+                    <input type="number" id="topupNominal" class="block w-full pl-4 pr-4 py-3 text-lg font-bold border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Contoh: 50000" min="1000" oninput="calculateTopup()">
+                </div>
+
+                <!-- Live Calculation -->
+                <div id="topupCalcBox" class="bg-gray-50 rounded-xl p-5 mb-6 hidden transition-all">
+                    <div class="flex justify-between mb-2 text-sm text-gray-600">
+                        <span>Nominal</span>
+                        <span id="topupDisplayNominal" class="font-medium">Rp 0</span>
+                    </div>
+                    <div class="flex justify-between mb-2 text-sm text-gray-600">
+                        <span>Pajak (5%)</span>
+                        <span id="topupDisplayPajak" class="font-medium text-red-500">Rp 0</span>
+                    </div>
+                    <div class="flex justify-between pt-3 border-t border-gray-200">
+                        <span class="text-base font-bold text-gray-800">Total</span>
+                        <span id="topupDisplayTotal" class="text-lg font-black text-blue-600">Rp 0</span>
+                    </div>
+                </div>
+
+                <!-- Button -->
+                <button type="button" id="topupAddBtn" onclick="addTopupToCart()" disabled class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl shadow-lg transition-all text-base flex items-center justify-center">
+                    <i class="fas fa-cart-plus mr-2"></i> Tambahkan ke Keranjang
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -124,6 +185,8 @@
         </div>
     </div>
 </div>
+
+
 <!-- Payment Modal -->
 <div id="paymentModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-50 hidden opacity-0 transition-opacity duration-300">
     <div class="bg-white rounded-xl shadow-2xl p-6 w-96 transform scale-95 transition-transform duration-300" id="paymentModalContent">
@@ -249,15 +312,27 @@
         let price = parseFloat(card.getAttribute('data-price'));
         let stock = parseInt(card.getAttribute('data-stok'));
 
-        if(cart[id]) {
-            if(cart[id].qty < stock) {
-                cart[id].qty += 1;
+        processAddToCart(id, name, price, stock, false);
+    }
+
+    function processAddToCart(cartId, name, price, stock, isCustom = false, originalId = null) {
+        if(cart[cartId]) {
+            if(cart[cartId].qty < stock) {
+                cart[cartId].qty += 1;
             } else {
                 showToast('Maksimal stok tercapai untuk ' + name, 'error');
             }
         } else {
-            if(stock > 0) {
-                cart[id] = { id: id, name: name, price: price, qty: 1, stock: stock };
+            if(stock > 0 || isCustom) { // E-Wallet or BRILink might bypass strict stock if it's digital, but we'll use stock
+                cart[cartId] = { 
+                    id: isCustom ? originalId : cartId, 
+                    name: name, 
+                    price: price, 
+                    qty: 1, 
+                    stock: stock,
+                    isCustom: isCustom,
+                    cartId: cartId
+                };
             } else {
                 showToast('Stok habis!', 'error');
             }
@@ -265,16 +340,16 @@
         renderCart();
     }
 
-    function changeQty(id, delta) {
-        if(cart[id]) {
-            let newQty = cart[id].qty + delta;
-            if(newQty > cart[id].stock) {
+    function changeQty(cartId, delta) {
+        if(cart[cartId]) {
+            let newQty = cart[cartId].qty + delta;
+            if(newQty > cart[cartId].stock) {
                 showToast('Maksimal stok tercapai!', 'error');
                 return;
             }
-            cart[id].qty = newQty;
-            if(cart[id].qty <= 0) {
-                delete cart[id];
+            cart[cartId].qty = newQty;
+            if(cart[cartId].qty <= 0) {
+                delete cart[cartId];
             }
             renderCart();
         }
@@ -329,26 +404,55 @@
 
         // Reset visual stock to original first for all cards
         document.querySelectorAll('.product-card').forEach(card => {
-            let id = card.getAttribute('data-id');
+            let productId = card.getAttribute('data-id');
             let originalStock = parseInt(card.getAttribute('data-stok'));
-            let displayStockEl = document.getElementById('display-stok-' + id);
+            let displayStockEl = document.getElementById('display-stok-' + productId);
             if(displayStockEl) {
                 displayStockEl.innerText = 'Stok: ' + originalStock;
             }
         });
 
-        for(let id in cart) {
-            const item = cart[id];
+        // Calculate total qty per real product ID (since custom items share same real ID)
+        let productQtyMap = {};
+        for(let cartId in cart) {
+            let realId = cart[cartId].id || cartId;
+            if(!productQtyMap[realId]) productQtyMap[realId] = 0;
+            productQtyMap[realId] += cart[cartId].qty;
+        }
+
+        // Update visual stocks
+        for(let realId in productQtyMap) {
+            let card = document.getElementById('card-' + realId);
+            if(card) {
+                let originalStock = parseInt(card.getAttribute('data-stok'));
+                let remainingStock = originalStock - productQtyMap[realId];
+                let displayStockEl = document.getElementById('display-stok-' + realId);
+                if(displayStockEl) {
+                    displayStockEl.innerText = 'Stok: ' + remainingStock;
+                }
+            }
+        }
+
+        // Output cart items to send to backend (map cartId to just id for backend)
+        let cartDataForBackend = {};
+
+        for(let cartId in cart) {
+            const item = cart[cartId];
             const itemTotal = item.price * item.qty;
             total += itemTotal;
             count++;
-
-            // Update visual stock (Original - Qty in cart)
-            let remainingStock = item.stock - item.qty;
-            let displayStockEl = document.getElementById('display-stok-' + id);
-            if(displayStockEl) {
-                displayStockEl.innerText = 'Stok: ' + remainingStock;
-            }
+            
+            // Backend expects object keyed by product ID.
+            // But since one product ID could have multiple prices now, we must ensure KasirController handles it if we pass array,
+            // OR we just send it keyed by cartId but make sure the real 'id' is sent.
+            // But KasirController does foreach ($cartData as $idProduk => $item), so we can't have duplicate $idProduk as keys!
+            // Wait, if it's top up, usually they just check out 1 nominal per transaction.
+            // We'll pass cartId as key, and let backend know the real id. We'll update the backend checkout to use item.id!
+            cartDataForBackend[cartId] = {
+                realId: item.id,
+                price: item.price,
+                qty: item.qty
+            };
 
             html += `
             <div class="flex justify-between items-center mb-4 pb-4 border-b border-gray-100 last:border-0">
@@ -358,9 +462,9 @@
                 </div>
                 <div class="flex items-center space-x-3">
                     <div class="flex items-center border border-gray-200 rounded-lg">
-                        <button type="button" onclick="changeQty('${id}', -1)" class="px-2 py-1 text-gray-500 hover:bg-gray-100 rounded-l-lg focus:outline-none"><i class="fas fa-minus text-xs"></i></button>
+                        <button type="button" onclick="changeQty('${cartId}', -1)" class="px-2 py-1 text-gray-500 hover:bg-gray-100 rounded-l-lg focus:outline-none"><i class="fas fa-minus text-xs"></i></button>
                         <span class="px-3 font-medium text-sm w-8 text-center">${item.qty}</span>
-                        <button type="button" onclick="changeQty('${id}', 1)" class="px-2 py-1 text-gray-500 hover:bg-gray-100 rounded-r-lg focus:outline-none"><i class="fas fa-plus text-xs"></i></button>
+                        <button type="button" onclick="changeQty('${cartId}', 1)" class="px-2 py-1 text-gray-500 hover:bg-gray-100 rounded-r-lg focus:outline-none"><i class="fas fa-plus text-xs"></i></button>
                     </div>
                     <div class="text-sm font-bold text-gray-800 w-20 text-right">Rp ${(itemTotal).toLocaleString('id-ID')}</div>
                 </div>
@@ -381,7 +485,7 @@
         subtotalSpan.innerText = formattedTotal;
         totalSpan.innerText = formattedTotal;
         
-        cartDataInput.value = JSON.stringify(cart);
+        cartDataInput.value = JSON.stringify(cartDataForBackend);
         formTotalInput.value = total;
     }
 
@@ -393,11 +497,30 @@
         const query = document.getElementById('searchInput').value.toLowerCase();
         const category = document.getElementById('categoryFilter').value;
         const cards = document.querySelectorAll('.product-card');
+        const productGrid = document.getElementById('productGrid');
+        const topupPanel = document.getElementById('topupInlinePanel');
+
+        // If category is Top Up E-Wallet, hide product grid and show topup form
+        if (category === 'Top Up E-Wallet') {
+            productGrid.classList.add('hidden');
+            topupPanel.classList.remove('hidden');
+            return;
+        }
+
+        // Otherwise, show product grid and hide topup form
+        productGrid.classList.remove('hidden');
+        topupPanel.classList.add('hidden');
 
         cards.forEach(card => {
             const name = card.getAttribute('data-name').toLowerCase();
             const cat = card.getAttribute('data-category');
             
+            // Always hide E-Wallet products from the product grid
+            if (cat === 'Top Up E-Wallet') {
+                card.style.display = 'none';
+                return;
+            }
+
             const matchQuery = name.includes(query);
             const matchCat = (category === 'all' || cat === category);
 
@@ -408,5 +531,82 @@
             }
         });
     }
+
+    // === Top Up E-Wallet Functions ===
+
+    function calculateTopup() {
+        const nominal = parseFloat(document.getElementById('topupNominal').value) || 0;
+        const calcBox = document.getElementById('topupCalcBox');
+        const btn = document.getElementById('topupAddBtn');
+
+        if (nominal >= 1000) {
+            const pajak = Math.round(nominal * 0.05);
+            const total = nominal + pajak;
+
+            document.getElementById('topupDisplayNominal').innerText = 'Rp ' + nominal.toLocaleString('id-ID');
+            document.getElementById('topupDisplayPajak').innerText = '+ Rp ' + pajak.toLocaleString('id-ID');
+            document.getElementById('topupDisplayTotal').innerText = 'Rp ' + total.toLocaleString('id-ID');
+
+            calcBox.classList.remove('hidden');
+            btn.disabled = false;
+        } else {
+            calcBox.classList.add('hidden');
+            btn.disabled = true;
+        }
+    }
+
+    function addTopupToCart() {
+        const provider = document.getElementById('topupProvider').value;
+        const nominal = parseFloat(document.getElementById('topupNominal').value) || 0;
+
+        if (nominal < 1000) {
+            showToast('Nominal tidak valid! Minimal Rp 1.000', 'error');
+            return;
+        }
+
+        const pajak = Math.round(nominal * 0.05);
+        const price = nominal + pajak;
+        const cartId = 'TOPUP-' + provider + '-' + nominal;
+        const name = 'Top Up ' + provider + ' Rp ' + nominal.toLocaleString('id-ID') + ' (+5% pajak)';
+
+        // Use the first E-Wallet product ID as reference, or a generic one
+        let refProductId = null;
+        document.querySelectorAll('.product-card').forEach(card => {
+            if (card.getAttribute('data-category') === 'Top Up E-Wallet' && !refProductId) {
+                refProductId = card.getAttribute('data-id');
+            }
+        });
+
+        if (cart[cartId]) {
+            cart[cartId].qty += 1;
+        } else {
+            cart[cartId] = {
+                id: refProductId || 'TOPUP',
+                name: name,
+                price: price,
+                qty: 1,
+                stock: 9999,
+                isCustom: true,
+                cartId: cartId
+            };
+        }
+
+        renderCart();
+        showToast('Top Up ' + provider + ' Rp ' + nominal.toLocaleString('id-ID') + ' ditambahkan!', 'success');
+
+        // Reset form
+        document.getElementById('topupNominal').value = '';
+        document.getElementById('topupCalcBox').classList.add('hidden');
+        document.getElementById('topupAddBtn').disabled = true;
+    }
+
+    // On page load, hide E-Wallet product cards from "Semua Kategori" view
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.product-card').forEach(card => {
+            if (card.getAttribute('data-category') === 'Top Up E-Wallet') {
+                card.style.display = 'none';
+            }
+        });
+    });
 </script>
 @endpush
