@@ -85,6 +85,21 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+
+            @if(Auth::user()->role === 'kasir')
+                <x-responsive-nav-link :href="route('kasir.pos')" :active="request()->routeIs('kasir.pos')">
+                    {{ __('Kasir (POS)') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('kasir.brilink.create')" :active="request()->routeIs('kasir.brilink.create')">
+                    {{ __('Transaksi BRILink') }}
+                </x-responsive-nav-link>
+            @endif
+
+            @if(Auth::user()->role === 'admin')
+                <x-responsive-nav-link :href="route('admin.brilink.laporan')" :active="request()->routeIs('admin.brilink.laporan')">
+                    {{ __('Laporan BRILink') }}
+                </x-responsive-nav-link>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->
