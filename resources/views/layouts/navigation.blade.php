@@ -12,9 +12,24 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard') || request()->routeIs('admin.dashboard') || request()->routeIs('kasir.dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+
+                    @if(Auth::user()->role === 'kasir')
+                        <x-nav-link :href="route('kasir.pos')" :active="request()->routeIs('kasir.pos')">
+                            {{ __('Kasir (POS)') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('kasir.brilink.create')" :active="request()->routeIs('kasir.brilink.create')">
+                            {{ __('Transaksi BRILink') }}
+                        </x-nav-link>
+                    @endif
+
+                    @if(Auth::user()->role === 'admin')
+                        <x-nav-link :href="route('admin.brilink.laporan')" :active="request()->routeIs('admin.brilink.laporan')">
+                            {{ __('Laporan BRILink') }}
+                        </x-nav-link>
+                    @endif
                 </div>
             </div>
 

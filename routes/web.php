@@ -34,6 +34,7 @@ Route::middleware(['auth'])->group(function () {
     // Admin Routes
     Route::middleware(['role:admin'])->group(function () {
         Route::get('/admin/dashboard', [DashboardController::class, 'adminDashboard'])->name('admin.dashboard');
+        Route::get('/admin/brilink/laporan', [\App\Http\Controllers\TransaksiBrilinkController::class, 'laporan'])->name('admin.brilink.laporan');
         
         Route::resource('pelanggan', PelangganController::class);
         Route::resource('karyawan', KaryawanController::class);
@@ -51,6 +52,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/kasir/pos', [KasirController::class, 'pos'])->name('kasir.pos');
         Route::post('/kasir/pos/checkout', [KasirController::class, 'checkout'])->name('kasir.checkout');
         Route::get('/kasir/pos/receipt/{id}', [KasirController::class, 'receipt'])->name('kasir.receipt');
+        
+        // Kasir BRILink Routes
+        Route::get('/kasir/brilink', [\App\Http\Controllers\TransaksiBrilinkController::class, 'create'])->name('kasir.brilink.create');
+        Route::post('/kasir/brilink', [\App\Http\Controllers\TransaksiBrilinkController::class, 'store'])->name('kasir.brilink.store');
     });
 
     // Shared Routes (Admin and Kasir can both manage transactions)
