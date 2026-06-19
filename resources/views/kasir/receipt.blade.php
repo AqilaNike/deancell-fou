@@ -27,7 +27,7 @@
                 <i class="fas fa-check-circle text-3xl"></i>
             </div>
             <h1 class="text-2xl font-black text-gray-900 mb-1 no-print">PESANAN BERHASIL</h1>
-            <h2 class="text-xl font-bold text-gray-800 tracking-wider">DEANCELL</h2>
+            <h2 class="text-xl font-bold text-gray-800 tracking-wider">DEANOVA ERP</h2>
             <p class="text-sm text-gray-500 mt-1">{{ $transaksi->outlet->alamat ?? 'Jl. Merdeka No. 1, Jakarta' }}</p>
             <p class="text-sm text-gray-500">{{ $transaksi->outlet->no_telp_outlet ?? '021-12345678' }}</p>
         </div>

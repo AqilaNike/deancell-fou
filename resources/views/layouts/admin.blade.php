@@ -61,7 +61,7 @@
                 <div class="bg-brand-100 p-2 rounded-lg">
                     <i class="fas fa-layer-group text-xl"></i>
                 </div>
-                <span class="text-xl font-bold tracking-tight">DeanCell<span class="text-gray-400 font-light">App</span></span>
+                <span class="text-xl font-bold tracking-tight">Deanova <span class="text-gray-400 font-light">ERP</span></span>
             </div>
         </div>
 
