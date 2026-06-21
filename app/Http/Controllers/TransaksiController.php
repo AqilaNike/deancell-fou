@@ -9,7 +9,7 @@ class TransaksiController extends Controller
 {
     public function index()
     {
-        $data = Transaksi::orderBy('tanggal', 'desc')->get();
+        $data = Transaksi::orderBy('created_at', 'desc')->get();
         return view('transaksi.index', compact('data'));
     }
 
